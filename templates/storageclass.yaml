@@ -1,0 +1,7 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: nfs
+  namespace: {{ .Values.nfs.namespace }}
+provisioner: {{ .Values.env.provisioner_name }}
+reclaimPolicy: Retain

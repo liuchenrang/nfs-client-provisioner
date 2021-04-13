@@ -1,0 +1,38 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ include "nfs.fullname" . }}
+  labels:
+    {{- include "nfs.labels" . | nindent 4 }}
+  namespace: {{ .Values.nfs.namespace }}
+spec:
+   replicas: 1
+   selector:
+      matchLabels:
+        {{- include "nfs.labels" . | nindent 8 }}
+   strategy:
+     type: Recreate
+   template:
+      metadata:
+         labels:
+            {{- include "nfs.labels" . | nindent 12 }}
+      spec:
+         serviceAccount: {{ .Values.account.name }}
+         containers:
+            -  name: nfs-client-provisioner
+               image: {{ .Values.image.repository }}
+               volumeMounts:
+                 -  name: nfs-client-root
+                    mountPath:  /persistentvolumes
+               env:
+                 -  name: PROVISIONER_NAME
+                    value: {{ .Values.env.provisioner_name }}
+                 -  name: NFS_SERVER
+                    value: {{ .Values.env.nsf_server }}
+                 -  name: NFS_PATH
+                    value: {{ .Values.env.nsf_path }}
+         volumes:
+           - name: nfs-client-root
+             nfs:
+               server: {{ .Values.env.nsf_server }}
+               path:  {{ .Values.env.nsf_path }}

@@ -1,0 +1,42 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: test-claim2
+  namespace: default
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "nfs" # 与 storageclass.yaml 中的 name 一致
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-demo
+  labels:
+    app: test-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-demo
+  template:
+    metadata:
+      labels:
+        app: test-demo
+    spec:
+      containers:
+      - name: test-demo
+        image: busybox
+        command: ["/bin/sh", "-c"]
+        args: ["touch /mnt/duoduo"]
+        volumeMounts:
+          - name: nfs-pvc
+            mountPath: "/mnt"
+      volumes:
+        - name: nfs-pvc
+          persistentVolumeClaim:
+            claimName: test-claim2
